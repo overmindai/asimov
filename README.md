@@ -1,6 +1,6 @@
 # asimov
 
-<img src="asimov.png" width="300">
+<img src="asimov.png" width="700">
 
 High performance I/O for LLMs (large language models).
 
