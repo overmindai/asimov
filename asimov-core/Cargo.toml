@@ -3,6 +3,7 @@ name = "asimov"
 version = "0.1.0"
 edition = "2021"
 description = "Asimov is a library for building high performance LLM-powered applications."
+license = "MIT"
 
 [lib]
 crate-type = ["lib", "cdylib"]
