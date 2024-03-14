@@ -2,6 +2,8 @@
 name = "asimov_derive"
 version = "0.1.0"
 edition = "2021"
+description = "Macros for the Asimov library."
+license = "MIT"
 
 [lib]
 proc-macro = true
