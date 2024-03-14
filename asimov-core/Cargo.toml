@@ -37,7 +37,7 @@ uuid = { version = "1.7.0", features = ["serde", "v4"] }
 async-openai = { version = "0.19.0", optional = true }
 
 # Tesseract-related
-hora = { git = "https://github.com/rangsikitpho/hora" }
+hora = { version = "0.1.1", git = "https://github.com/rangsikitpho/hora" }
 getrandom = { version = "0.2", features = ["js"] }
 
 # Qdrant
@@ -46,7 +46,7 @@ derive_builder = "0.20.0"
 tracing = "0.1.40"
 reqwest = { version = "0.11", optional = true }
 tera = "1.19.1"
-asimov_derive = { path = "../asimov-derive" }
+asimov_derive = { version = "0.1.0", git = "https://github.com/overmindai/asimov/", package = "asimov_derive"}
 parking_lot = "0.12.1"
 
 
