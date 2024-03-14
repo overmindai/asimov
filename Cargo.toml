@@ -1,0 +1,6 @@
+[workspace]
+members = ["asimov-core", "asimov-derive"]
+resolver = "2"
+
+
+
