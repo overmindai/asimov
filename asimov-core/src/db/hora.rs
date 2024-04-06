@@ -33,7 +33,12 @@ impl HoraCollection {
 
     fn add_batch(&mut self, keys: impl IntoIterator<Item = (u64, Vec<f32>)>) -> Result<()> {
         for (id, embedding) in keys {
-            self.collection.add(&embedding, id).unwrap();
+            self.collection.add(&embedding, id).map_err(|e| {
+                AsimovError::Hora(format!(
+                    "Failed to add vector with embedding {:?} and id {:?} to collection: {}",
+                    embedding, id, e
+                ))
+            })?;
             self.store.insert(id, embedding); // store the vector
         }
         self.collection
@@ -67,7 +72,7 @@ impl HoraCollection {
 
         self.collection
             .build(hora::core::metrics::Metric::CosineSimilarity)
-            .unwrap();
+            .map_err(|e| AsimovError::Hora(format!("Failed to build collection: {}", e)))?;
 
         Ok(())
     }
