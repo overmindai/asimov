@@ -1,4 +1,4 @@
-# Asimov: Build blazingly fast LLM applications in Rust 
+# Asimov: Build blazingly fast LLM applications in Rust 🦀
 
 
 <img src="asimov.png" width="500">
@@ -6,7 +6,11 @@
 ## Overview
 
 `asimov` is a Rust library to build high performance LLM based applications. The crate is divided into the following modules:
-1. `io` Utilities for providing structured 
+1. [`io`](https://github.com/overmindai/asimov/tree/master/asimov-core/src/io) Structured input and output parsing, stream processing.
+2. [`db`](https://github.com/overmindai/asimov/tree/master/asimov-core/src/db) Abstractions to interact with vector databases.
+3. [`models`](https://github.com/overmindai/asimov/tree/master/asimov-core/src/models) Abstractions to interact with LLMs.
+4. [`tokenizers`](https://github.com/overmindai/asimov/tree/master/asimov-core/src/tokenizers) Tokenizer utilities
+
 
 ## Quickstart
 
