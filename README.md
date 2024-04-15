@@ -10,7 +10,7 @@
 
 ## Quickstart
 
-Here's a simple example using `asimov` to generate a response from an LLM. See the [examples](  https://github.com/overmindai/asimov/tree/master/examples) directory for more examples.
+Here's a simple example using `asimov` to generate a response from an LLM. See the [examples](https://github.com/overmindai/asimov/tree/master/asimov-core/examples) directory for more examples.
 
 ```rust
 
