@@ -253,31 +253,39 @@ where
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use super::*;
 
-    #[cfg(feature = "openai")]
-    use crate::models::openai::OpenAiEmbedding;
     use crate::tokenizers::openai::OpenAiTiktoken;
+    use rand::rngs::StdRng;
+    use rand::{Rng, SeedableRng};
 
-    struct MockEmbed;
+    pub struct RandomMockEmbed {
+        seed: u64,
+    }
+
+    impl RandomMockEmbed {
+        pub fn new(seed: u64) -> Self {
+            RandomMockEmbed { seed }
+        }
+    }
 
     #[async_trait]
-    impl Embed for MockEmbed {
+    impl Embed for RandomMockEmbed {
         type Tokenizer = OpenAiTiktoken;
         const DIM: u32 = 128;
 
         async fn embed<I: Input + ?Sized>(&self, _input: &I) -> Result<Vec<f32>> {
-            let embedding = vec![0.0; Self::DIM as usize];
+            let mut rng = StdRng::seed_from_u64(self.seed); // Use the seed to create a reproducible RNG
+            let embedding: Vec<f32> = (0..Self::DIM).map(|_| rng.gen_range(0.0..1.0)).collect();
             Ok(embedding)
         }
     }
 
-    #[cfg(feature = "openai")]
     #[tokio::test]
     async fn test_hora_db() -> Result<()> {
-        let mut db = HoraDb::new(OpenAiEmbedding::default());
+        let mut db = HoraDb::new(RandomMockEmbed::new(42));
 
         let namespace = "namespace1";
 

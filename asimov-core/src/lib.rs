@@ -17,11 +17,13 @@ pub mod prelude {
     pub use crate::error::{AsimovError, Result};
     pub use crate::io::output::RawString;
     pub use crate::io::{Embeddable, Input};
+    pub use crate::io::{StreamedOutput, TokenStream};
     #[cfg(feature = "openai")]
     pub use crate::models::openai::*;
     pub use crate::models::{Embed, Generate};
     pub use crate::{lines, prompt};
     pub use asimov_derive::asimov;
+    pub use futures::StreamExt;
     pub use tera;
 }
 

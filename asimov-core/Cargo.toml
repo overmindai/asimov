@@ -15,6 +15,7 @@ derive_more = "0.99.17"
 anyhow = "1.0.75"
 strum = "0.26.1"
 strum_macros = "0.26.1"
+repair_json = "0.1.0"
 
 # Async features
 futures = "0.3.17"
@@ -57,6 +58,35 @@ parking_lot = "0.12.1"
 dotenvy = "0.15.7"
 tokio = { version = "1", features = ["rt", "macros"] }
 rand = "0.8.4"
+
+[[example]]
+name = "simple"
+path = "examples/simple.rs"
+
+[[example]]
+name = "structured"
+path = "examples/structured.rs"
+
+[[example]]
+name = "structured_streaming"
+path = "examples/structured_streaming.rs"
+
+[[example]]
+name = "simple_fewshot"
+path = "examples/simple_fewshot.rs"
+
+[[example]]
+name = "streaming"
+path = "examples/streaming.rs"
+
+[[example]]
+name = "simple_chain"
+path = "examples/simple_chain.rs"
+
+
+[target.'cfg(not(target_env = "msvc"))'.dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread"] }
+lazy_static = "1.4.0"
 
 [features]
 openai = ["dep:async-openai"]

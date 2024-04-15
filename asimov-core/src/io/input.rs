@@ -53,7 +53,10 @@ impl<T: Input> Input for &T {
 impl<T: Input> Input for Vec<T> {
     fn render(&self) -> Result<String> {
         let mut s = String::new();
-        for item in self {
+        for (index, item) in self.iter().enumerate() {
+            if index > 0 {
+                s.push_str("===\n");
+            }
             s.push_str(&item.render()?);
         }
         Ok(s)
@@ -131,6 +134,16 @@ macro_rules! lines {
 
 #[macro_export]
 macro_rules! prompt {
+
+    ($template:expr) => {
+        {
+            let tera_context = tera::Context::new(); // Create an empty context
+            let tera = tera::Tera::one_off(&$template, &tera_context, true)
+                .expect("Failed to render template");
+            tera
+        }
+    };
+    // Existing pattern for template string with identifiers
     ($template:expr, $($idents:expr),*) => {
         {
             let mut tera_context = tera::Context::new();
