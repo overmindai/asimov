@@ -4,7 +4,7 @@ use std::pin::Pin;
 use std::task::Poll;
 
 use futures::Stream;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 type ItemStream<T> = Pin<Box<dyn Stream<Item = T>>>;
 
@@ -66,7 +66,7 @@ impl<D: DeserializeOwned> Stream for JsonStream<D> {
 ///
 /// We use the `derive_more` trait to auto implement traits such as
 /// `Display`, `From`, `Deref`, `DerefMut`, making our lives easier.
-#[derive(Display, From, Clone, Deref, DerefMut, Debug, PartialEq, Eq, Serialize)]
+#[derive(Display, From, Clone, Deref, DerefMut, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RawString(pub String);
 
 impl RawString {
