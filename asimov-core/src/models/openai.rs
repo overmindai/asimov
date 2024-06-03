@@ -126,15 +126,6 @@ impl OpenAiLlm {
 }
 
 #[async_trait]
-impl Generate<RawString> for OpenAiLlm {
-    /// Pass the output of the LLM directly.
-    async fn generate(&self, input: impl Input) -> Result<RawString> {
-        let raw = self.raw_string(input).await?;
-        Ok(RawString::new(raw))
-    }
-}
-
-#[async_trait]
 impl<S> Generate<S> for OpenAiLlm
 where
     for<'a> S: Deserialize<'a>,
