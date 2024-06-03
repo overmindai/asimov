@@ -177,7 +177,7 @@ impl Generate<TokenStream> for OpenAiLlm {
 }
 
 #[async_trait]
-impl<D: DeserializeOwned + 'static> Generate<StreamedOutput<D>> for OpenAiLlm {
+impl<D: DeserializeOwned + Send + 'static> Generate<StreamedOutput<D>> for OpenAiLlm {
     /// Use `json_stream` to stream any type that implements
     /// [`Deserialize`].
     async fn generate(&self, input: impl Input) -> Result<StreamedOutput<D>> {

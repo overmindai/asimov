@@ -1,6 +1,6 @@
 [package]
 name = "asimov"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "Asimov is a library for building high performance LLM-powered applications."
 license = "MIT"

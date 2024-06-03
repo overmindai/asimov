@@ -6,7 +6,7 @@ use std::task::Poll;
 use futures::Stream;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-type ItemStream<T> = Pin<Box<dyn Stream<Item = T>>>;
+type ItemStream<T> = Pin<Box<dyn Stream<Item = T> + Send>>; // Ensure the Stream is Send
 
 /// Building block for streaming LLM responses.
 ///
@@ -16,7 +16,7 @@ pub struct TokenStream {
 }
 
 impl TokenStream {
-    pub fn new(stream: impl Stream<Item = String> + 'static) -> Self {
+    pub fn new(stream: impl Stream<Item = String> + Send + 'static) -> Self {
         Self {
             stream: Box::pin(stream),
         }
@@ -35,11 +35,11 @@ impl Stream for TokenStream {
 }
 
 /// This struct lets us stream parsed elements
-pub struct JsonStream<D: DeserializeOwned> {
+pub struct JsonStream<D: DeserializeOwned + Send> {
     stream: json_stream::JsonStream<D, ItemStream<Result<Vec<u8>>>>,
 }
 
-impl<D: DeserializeOwned> JsonStream<D> {
+impl<D: DeserializeOwned + Send> JsonStream<D> {
     pub fn new(stream: ItemStream<Result<Vec<u8>>>) -> Self {
         Self {
             stream: json_stream::JsonStream::new(stream),
@@ -47,7 +47,7 @@ impl<D: DeserializeOwned> JsonStream<D> {
     }
 }
 
-impl<D: DeserializeOwned> Stream for JsonStream<D> {
+impl<D: DeserializeOwned + Send> Stream for JsonStream<D> {
     type Item = Result<D>;
 
     fn poll_next(
@@ -97,7 +97,7 @@ pub struct StreamedOutput<T> {
 }
 
 impl<T> StreamedOutput<T> {
-    pub fn new(stream: impl Stream<Item = Result<T>> + 'static) -> Self {
+    pub fn new(stream: impl Stream<Item = Result<T>> + Send + 'static) -> Self {
         Self {
             stream: Box::pin(stream),
         }
