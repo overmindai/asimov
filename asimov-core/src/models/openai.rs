@@ -175,6 +175,24 @@ impl<D: DeserializeOwned + Send + 'static> Generate<StreamedOutput<D>> for OpenA
     }
 }
 
+#[async_trait]
+impl Generate<StreamedOutput<RawString>> for OpenAiLlm {
+    /// Generate a stream of tokens. Note that because of the fallibility
+    /// of the parsing operation inherent to the streaming routine,
+    /// the stream will yield a `Result` of [`RawString`].
+    ///
+    /// That's arguably awkward since there's no actual parsing going on –
+    /// and probably not what you want.
+    ///
+    /// Consider using [`TokenStream`] as the result type, since it will
+    /// stream tokens, as [`String`], directly.
+    async fn generate(&self, input: impl Input) -> Result<StreamedOutput<RawString>> {
+        let stream = self.stream_tokens(input).await?;
+        let stream = StreamedOutput::<RawString>::new(stream.map(|t| Ok(RawString::new(t))));
+        Ok(stream)
+    }
+}
+
 /// Struct handling the interaction with OpenAI's API for embedding text.
 #[derive(TypedBuilder, Clone)]
 pub struct OpenAiEmbedding {
