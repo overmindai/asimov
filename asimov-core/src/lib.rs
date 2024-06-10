@@ -15,9 +15,9 @@ pub mod prelude {
     pub use crate::db::qdrant::Qdrant;
     pub use crate::db::space::VectorSpace;
     pub use crate::error::{AsimovError, Result};
-    pub use crate::io::output::RawString;
+    pub use crate::io::output::*;
     pub use crate::io::{Embeddable, Input};
-    pub use crate::io::{StreamedOutput, TokenStream};
+
     #[cfg(feature = "openai")]
     pub use crate::models::openai::*;
     pub use crate::models::{Embed, Generate};
