@@ -140,31 +140,17 @@ where
     /// instead.
     async fn generate(&self, input: impl Input) -> Result<S> {
         let raw = self.raw_string(input).await?;
+        let parsed = serde_json::from_str(&raw)?;
+        Ok(parsed)
+    }
+}
 
-        // Attempt to parse the raw JSON string
-        match serde_json::from_str(&raw) {
-            Ok(parsed) => Ok(parsed),
-            Err(e) => {
-                // If parsing fails, attempt to repair the JSON string
-                match repair_json::repair(raw.to_string()) {
-                    Ok(repaired) => {
-                        // Attempt to parse the repaired JSON
-                        serde_json::from_str(&repaired).map_err(|e| {
-                            AsimovError::Output(format!(
-                                "Failed to parse string: {}. Stack trace: {:?}",
-                                serde_json::to_string_pretty(&raw).unwrap_or_else(|_| raw.clone()),
-                                e
-                            ))
-                        })
-                    }
-                    Err(_) => Err(AsimovError::Output(format!(
-                        "Failed to repair JSON: for {}. Stack trace: {:?}",
-                        serde_json::to_string_pretty(&raw).unwrap_or_else(|_| raw.clone()),
-                        e
-                    ))),
-                }
-            }
-        }
+#[async_trait]
+impl Generate<RawString> for OpenAiLlm {
+    /// Pass the output of the LLM directly.
+    async fn generate(&self, input: impl Input) -> Result<RawString> {
+        let raw = self.raw_string(input).await?;
+        Ok(RawString::new(raw))
     }
 }
 
@@ -241,7 +227,7 @@ where
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use crate::{lines, prompt, tokenizers::Tokenizer};
 

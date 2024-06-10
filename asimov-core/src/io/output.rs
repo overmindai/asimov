@@ -66,7 +66,7 @@ impl<D: DeserializeOwned + Send> Stream for JsonStream<D> {
 ///
 /// We use the `derive_more` trait to auto implement traits such as
 /// `Display`, `From`, `Deref`, `DerefMut`, making our lives easier.
-#[derive(Display, From, Clone, Deref, DerefMut, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Display, From, Clone, Deref, DerefMut, Debug, PartialEq, Eq, Serialize)]
 pub struct RawString(pub String);
 
 impl RawString {
