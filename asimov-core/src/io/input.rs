@@ -25,17 +25,9 @@ pub trait Input: Send + Sync {
 /// If used with the `asimov` attribute macro, it will automatically implement `Embeddable` for the struct.
 /// If no key is provided, the struct itself will be used as the key.
 pub trait Embeddable: Input + Sync + Send + 'static {
-    type Key: Input + Serialize + for<'de> Deserialize<'de> + Send + Sync;
+    type Key: Input + Serialize + Clone + for<'de> Deserialize<'de> + Send + Sync;
 
-    fn key(&self) -> &Self::Key;
-}
-
-impl Embeddable for Value {
-    type Key = Value;
-
-    fn key(&self) -> &Self::Key {
-        self
-    }
+    fn key(&self) -> Self::Key;
 }
 
 impl Input for Value {
@@ -160,23 +152,37 @@ macro_rules! prompt {
 impl Embeddable for String {
     type Key = String;
 
-    fn key(&self) -> &Self::Key {
-        self
+    fn key(&self) -> Self::Key {
+        self.clone()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::tokenizers::Tokenizer;
-
     use super::*;
+    use crate::tokenizers::Tokenizer;
+    use crate::Embeddable;
     use serde::Deserialize;
 
     #[derive(Serialize, Deserialize, Clone)]
-    #[asimov_derive::asimov(key = "name")]
+
     struct CustomType {
         key: String,
         name: String,
+    }
+
+    impl Input for CustomType {
+        fn render(&self) -> Result<String> {
+            Ok(self.name.clone())
+        }
+    }
+
+    impl Embeddable for CustomType {
+        type Key = String;
+
+        fn key(&self) -> Self::Key {
+            self.key.clone()
+        }
     }
 
     #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
@@ -195,16 +201,30 @@ mod tests {
     impl Embeddable for CustomType2 {
         type Key = String;
 
-        fn key(&self) -> &Self::Key {
-            &self.name
+        fn key(&self) -> Self::Key {
+            self.name.clone()
         }
     }
 
     #[derive(Serialize, Deserialize, Clone)]
-    #[asimov_derive::asimov]
+
     struct CustomType3 {
         name: String,
         internal: CustomType2,
+    }
+
+    impl Input for CustomType3 {
+        fn render(&self) -> Result<String> {
+            Ok(self.name.clone())
+        }
+    }
+
+    impl Embeddable for CustomType3 {
+        type Key = String;
+
+        fn key(&self) -> Self::Key {
+            self.name.clone()
+        }
     }
 
     #[test]

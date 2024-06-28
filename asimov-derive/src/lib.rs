@@ -59,8 +59,8 @@ pub fn asimov(attr: TokenStream, item: TokenStream) -> TokenStream {
             impl Embeddable for #struct_name {
                 type Key = #key_type;
 
-                fn key(&self) -> &Self::Key {
-                    &self.#key
+                fn key(&self) -> Self::Key {
+                    self.#key.clone()
                 }
             }
         }

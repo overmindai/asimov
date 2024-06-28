@@ -1,6 +1,6 @@
 [package]
 name = "asimov"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 description = "Asimov is a library for building high performance LLM-powered applications."
 license = "MIT"
@@ -48,7 +48,7 @@ derive_builder = "0.20.0"
 tracing = "0.1.40"
 reqwest = { version = "0.11", optional = true }
 tera = "1.19.1"
-asimov_derive = "0.1.0"
+asimov_derive = { path = "../asimov-derive" }
 parking_lot = "0.12.1"
 
 

@@ -38,8 +38,8 @@ impl Input for FewShotCodeExample {
 impl Embeddable for FewShotCodeExample {
     type Key = String;
 
-    fn key(&self) -> &Self::Key {
-        &self.prompt
+    fn key(&self) -> Self::Key {
+        self.prompt.clone()
     }
 }
 

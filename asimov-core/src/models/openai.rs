@@ -247,9 +247,9 @@ where
 #[cfg(test)]
 mod tests {
 
-    use crate::{lines, prompt, tokenizers::Tokenizer};
-
     use super::*;
+    use crate::{lines, prompt, tokenizers::Tokenizer};
+    use serde::{Deserialize, Serialize};
 
     #[tokio::test]
     async fn test_embedding() -> Result<()> {
@@ -273,6 +273,30 @@ mod tests {
     #[derive(Deserialize, Debug, PartialEq)]
     struct MyType {
         test: u8,
+    }
+
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    struct PropertyBag {
+        name: String,
+        age: u8,
+        address: String,
+    }
+
+    impl Input for PropertyBag {
+        fn render(&self) -> Result<String> {
+            Ok(serde_json::to_string(self)?)
+        }
+    }
+
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    struct PythonCode {
+        code: String,
+    }
+
+    impl Input for PythonCode {
+        fn render(&self) -> Result<String> {
+            Ok(serde_json::to_string(self)?)
+        }
     }
 
     #[tokio::test]
@@ -318,6 +342,150 @@ mod tests {
             println!("{item:?}");
         }
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_json_stream_multiple_items() -> Result<()> {
+        std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
+        let gpt4 = OpenAiLlm::builder()
+            .temperature(0.0)
+            .model("gpt-4".to_string())
+            .build();
+
+        let sample = PropertyBag {
+            name: "John Doe".to_string(),
+            age: 42,
+            address: "1234 Main St".to_string(),
+        };
+
+        let prompt = prompt!(
+            lines! {
+                "Output the following thrice separated by a new line, verbatim: {{sample}}"
+            },
+            sample
+        );
+
+        let mut stream: StreamedOutput<PropertyBag> = gpt4.generate(prompt).await?;
+        while let Some(item) = stream.next().await {
+            let item = item.unwrap();
+            println!("The item is {:?}", item);
+        }
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_json_stream_single_item() -> Result<()> {
+        std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
+        let gpt4 = OpenAiLlm::builder()
+            .temperature(0.0)
+            .model("gpt-4".to_string())
+            .build();
+
+        let sample = PythonCode { code: "import pandas as pd\nimport pyarrow as pa\nfrom statsmodels.tsa.arima.model import ARIMA\nasync def run(tbl_id, output_id):\n    table = await get_table(tbl_id)\n    df = table.value\n    # Assuming 'df' has columns ['date', 'value'] and 'date' is already the index\n    # If 'date' is not the index, uncomment the next line\n    # df.set_index('date', inplace=True)\n    model = ARIMA(df['value'], order=(5,1,0))\n    model_fit = model.fit()\n    forecast = model_fit.forecast(steps=1)\n    result = pd.DataFrame({'forecast': forecast}, index=[df.index[-1] + pd.Timedelta(days=1)])\n    table = pa.Table.from_pandas(result)\n    output = table.to_batches()\n    await ingest_artifact(PyTable(output_id, 1, output))\n    return output_id".to_string() };
+
+        let prompt = prompt!(
+            lines! {
+                "Output the following, verbatim: {{sample}}"
+            },
+            sample
+        );
+
+        let mut stream: StreamedOutput<PythonCode> = gpt4.generate(prompt).await?;
+        while let Some(item) = stream.next().await {
+            let item = item.unwrap();
+            println!("The item is {:?}", item);
+        }
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_token_stream_client_buffer() -> Result<()> {
+        std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
+
+        let gpt4 = OpenAiLlm::builder().model("gpt-4".to_string()).build();
+
+        let sample = PythonCode {
+            code: "import numpy as np\nx = np.array([1, 2, 3])\nprint(x)".to_string(),
+        };
+
+        let prompt = prompt!(
+            lines! {
+                "Output the following, verbatim: {{sample}}"
+            },
+            sample
+        );
+
+        let mut token_stream: TokenStream = gpt4.generate(prompt).await?;
+        let mut full_text = String::new();
+
+        while let Some(token) = token_stream.next().await {
+            println!("Token: {:?}", token);
+            full_text.push_str(&token);
+        }
+
+        let deserialized: PythonCode = serde_json::from_str(&full_text)?;
+        assert_eq!(deserialized, sample);
+
+        println!("Deserialized PythonCode: {:?}", deserialized);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_token_stream_client_buffer_efficient() -> Result<()> {
+        std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
+
+        let gpt4 = OpenAiLlm::builder().model("gpt-4".to_string()).build();
+
+        let sample = PythonCode {
+            code: "import numpy as np\nx = np.array([1, 2, 3])\nprint(x)".to_string(),
+        };
+
+        let prompt = prompt!(
+            lines! {
+                "Output the following, verbatim: {{sample}}"
+            },
+            sample
+        );
+
+        let mut token_stream: TokenStream = gpt4.generate(prompt).await?;
+        let mut buffer = Vec::new();
+
+        while let Some(token) = token_stream.next().await {
+            println!("Token: {:?}", token);
+            buffer.extend_from_slice(token.as_bytes());
+        }
+
+        let full_text = String::from_utf8(buffer)
+            .map_err(|_| AsimovError::Output("Invalid UTF-8".to_string()))?;
+        let deserialized: PythonCode = serde_json::from_str(&full_text)?;
+        assert_eq!(deserialized, sample);
+
+        println!("Deserialized PythonCode: {:?}", deserialized);
+
+        Ok(())
+    }
+
+    #[derive(Serialize, Deserialize, Debug, Clone)]
+    struct GenCellPlanStep {
+        pub subgoal: String,
+        pub consumes: Vec<String>,
+        pub produces: String,
+        pub tool_id: String,
+    }
+    #[tokio::test]
+    async fn test_streamed_output() -> Result<()> {
+        std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
+
+        let gpt4 = OpenAiLlm::builder().model("gpt-4".to_string()).build();
+
+        let mut stream: StreamedOutput<GenCellPlanStep> =
+        gpt4.generate("Return the following valid json verbatim: {'tool_id': 'python', 'consumes': [], 'subgoal': '1+1', 'produces': 'op1'} ").await.unwrap();
+
+        while let Some(step) = stream.next().await {
+            println!("Step: {:?}", step);
+        }
         Ok(())
     }
 
